@@ -6,7 +6,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/<aquarium-vue3-threejs>/' : '/',
+  base: '/aquarium-vue3-threejs/',
   plugins: [vue(), vueJsx()],
   resolve: {
     alias: {
