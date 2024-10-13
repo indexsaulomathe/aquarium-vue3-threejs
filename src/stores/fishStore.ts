@@ -43,10 +43,19 @@ export const useFishStore = defineStore('fishStore', () => {
     }
   }
 
+  const feedFish = (fishId: number) => {
+    const fish = fishesInAquarium.value.find((f) => f.id === fishId)
+    if (fish) {
+      fish.hunger = 100
+      fish.isCritical = false
+    }
+  }
+
   return {
     fishesInAquarium,
     addFish,
     updateFishPosition,
-    updateHunger
+    updateHunger,
+    feedFish
   }
 })

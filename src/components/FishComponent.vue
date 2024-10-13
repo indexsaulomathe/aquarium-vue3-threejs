@@ -1,5 +1,5 @@
 <template>
-    <div class="fish" :style="fishStyle">
+    <div class="fish" :style="fishStyle" :data-fish-id="id">
         <p class="fish-name text-center font-bold mb-1">{{ name }}</p>
         <FishImageComponent :type="type" :hunger="hunger" :directionX="directionX" :name="name" />
         <FishHungerComponent :hunger="hunger" />
