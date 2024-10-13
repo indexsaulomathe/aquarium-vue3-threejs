@@ -1,21 +1,25 @@
 <template>
     <div class="fish" :style="fishStyle">
-        <img :src="fishImage" :alt="name" class="fish-image" />
+        <p class="fish-name text-center font-bold mb-1">{{ name }}</p>
+        <FishImageComponent :type="type" :hunger="hunger" :directionX="directionX" :name="name" />
+        <FishHungerComponent :hunger="hunger" />
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue';
-import goldfish from '@/assets/img/goldfish.png';
-import guppie from '@/assets/img/guppie.png';
-import tropicalFish from '@/assets/img/tropical-fish.png';
-import tuna from '@/assets/img/tuna.png';
-import deadFish from '@/assets/img/dead.png';
-import goldPurpleFish from '@/assets/img/golden-purple-fish.png';
+import { defineComponent, computed, ref, onMounted, type CSSProperties } from 'vue';
+import FishImageComponent from './FishImageComponent.vue';
+import FishHungerComponent from './FishHungerComponent.vue';
+import { updateFishMovementAndHunger, type Direction } from '@/utils/movementUtils';
 
 export default defineComponent({
     name: 'FishComponent',
+    components: { FishImageComponent, FishHungerComponent },
     props: {
+        id: {
+            type: Number,
+            required: true,
+        },
         name: {
             type: String,
             required: true,
@@ -24,58 +28,74 @@ export default defineComponent({
             type: String,
             required: true,
         },
+        x: {
+            type: Number,
+            required: true,
+        },
+        y: {
+            type: Number,
+            required: true,
+        },
         size: {
             type: Number,
             default: 100,
         },
+        hunger: {
+            type: Number,
+            required: true,
+        },
     },
-    setup(props) {
-        const fishImage = computed(() => {
-            switch (props.type) {
-                case 'goldfish':
-                    return goldfish;
-                case 'guppie':
-                    return guppie;
-                case 'tropical':
-                    return tropicalFish;
-                case 'tuna':
-                    return tuna;
-                case 'gold-purple':
-                    return goldPurpleFish;
-                case 'dead':
-                    return deadFish;
-                default:
-                    return goldfish;
-            }
-        });
+    emits: ['update-hunger', 'update-position'],
+    setup(props, { emit }) {
+        const direction = ref<Direction>({ x: Math.random() > 0.5 ? 1 : -1, y: Math.random() > 0.5 ? 1 : -1 });
 
-        const fishStyle = computed(() => ({
+        const directionX = computed(() => direction.value.x);
+
+        const fishStyle = computed<CSSProperties>(() => ({
             width: `${props.size}px`,
             height: `${props.size}px`,
-            animation: 'swim 10s linear infinite',
+            top: `${props.y}%`,
+            left: `${props.x}%`,
             position: 'absolute',
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
+            transition: 'top 1s linear, left 1s linear',
+            transform: `translate(-50%, -50%)`,
         }));
 
-        return { fishImage, fishStyle };
+        const handleMovementAndHunger = () => {
+            if (props.hunger > 0) {
+                const { newX, newY, newDirection, newHunger } = updateFishMovementAndHunger({
+                    x: props.x,
+                    y: props.y,
+                    hunger: props.hunger,
+                    direction: direction.value,
+                    bounds: { xMin: 0, xMax: 80, yMin: 0, yMax: 80 },
+                    step: 3,
+                });
+
+                direction.value = newDirection;
+
+                emit('update-position', props.id, newX, newY);
+                emit('update-hunger', props.id, newHunger);
+            }
+        };
+
+        onMounted(() => {
+            const intervalId = setInterval(() => {
+                handleMovementAndHunger();
+            }, 1000);
+
+            return () => {
+                clearInterval(intervalId);
+            };
+        });
+
+        return { fishStyle, directionX };
     },
 });
 </script>
 
 <style scoped>
-.fish-image {
-    width: 100%;
-    height: auto;
-}
-
-@keyframes swim {
-    0% {
-        transform: translateX(0);
-    }
-
-    100% {
-        transform: translateX(100vw);
-    }
+.fish-name {
+    color: #333;
 }
 </style>

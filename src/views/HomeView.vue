@@ -26,7 +26,8 @@ const addFishToAquarium = (fish: { name: string; type: string }) => {
     </div>
 
     <div class="col-span-4 bg-white shadow rounded-lg flex justify-center items-center">
-      <Aquarium :fishes="fishesInAquarium" />
+      <Aquarium :fishes="fishesInAquarium">
+      </Aquarium>
     </div>
   </div>
 </template>
